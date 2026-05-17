@@ -4,6 +4,7 @@ import { SeasonalChart } from '@/components/species/SeasonalChart';
 import { LogButton } from '@/components/species/LogButton';
 import { PhotosTab } from '@/components/species/PhotosTab';
 import { SoundsTab } from '@/components/species/SoundsTab';
+import { BackButton } from '@/components/BackButton';
 
 interface SABAPSpeciesDetail {
   Common_group: string;
@@ -41,14 +42,16 @@ export default async function SpeciesDetailPage({
 
   return (
     <div className="space-y-6">
+      <BackButton />
+
       {/* Header */}
       <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-forest-800">{commonName}</h1>
+          <h1 className="text-2xl font-bold text-aira-900">{commonName}</h1>
           <p className="text-gray-500 italic">{scientificName}</p>
           <div className="flex gap-2 mt-2 flex-wrap">
-            <span className="badge bg-forest-100 text-forest-800">{sp.Family}</span>
-            <span className="badge bg-earth-100 text-earth-800">{sp.Order}</span>
+            <span className="badge bg-aira-100 text-aira-800">{sp.Family}</span>
+            <span className="badge bg-gold-100 text-gold-800">{sp.Order}</span>
           </div>
         </div>
         <LogButton spp={spp} commonName={commonName} />
@@ -56,25 +59,25 @@ export default async function SpeciesDetailPage({
 
       {/* Photos */}
       <div className="card">
-        <h2 className="font-bold text-forest-700 mb-3">📷 Photos</h2>
+        <h2 className="font-bold text-aira-700 mb-3">📷 Photos</h2>
         <PhotosTab scientificName={scientificName} />
       </div>
 
       {/* Sounds */}
       <div className="card">
-        <h2 className="font-bold text-forest-700 mb-3">🔊 Sounds</h2>
+        <h2 className="font-bold text-aira-700 mb-3">🔊 Sounds</h2>
         <SoundsTab commonName={commonName} />
       </div>
 
       {/* Distribution */}
       <div className="card">
-        <h2 className="font-bold text-forest-700 mb-3">Distribution (SABAP2)</h2>
+        <h2 className="font-bold text-aira-700 mb-3">Distribution (SABAP2)</h2>
         <DistributionMap spp={spp} />
       </div>
 
       {/* Seasonal */}
       <div className="card">
-        <h2 className="font-bold text-forest-700 mb-3">Monthly Reporting Rate</h2>
+        <h2 className="font-bold text-aira-700 mb-3">Monthly Reporting Rate</h2>
         <SeasonalChart spp={spp} />
       </div>
     </div>

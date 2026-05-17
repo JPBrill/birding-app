@@ -1,14 +1,17 @@
 'use client';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PlusCircle } from 'lucide-react';
 
-export function LogButton({ spp, commonName }: { spp: string; commonName: string }) {
+interface Props { spp: string; commonName: string; }
+
+export function LogButton({ spp, commonName }: Props) {
+  const router = useRouter();
   return (
-    <Link
-      href={`/log?spp=${spp}&name=${encodeURIComponent(commonName)}`}
-      className="btn-primary flex items-center gap-2 shrink-0"
+    <button
+      onClick={() => router.push(`/log?spp=${spp}&name=${encodeURIComponent(commonName)}`)}
+      className="btn-gold flex items-center gap-2 whitespace-nowrap"
     >
       <PlusCircle size={16} /> Log Sighting
-    </Link>
+    </button>
   );
 }

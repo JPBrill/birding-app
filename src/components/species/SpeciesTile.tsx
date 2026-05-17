@@ -26,17 +26,17 @@ export function SpeciesTile({ spp, commonName, scientificName, family }: Props) 
 
   return (
     <Link href={`/species/${spp}`}
-      className="group flex flex-col rounded-2xl overflow-hidden border border-forest-100 bg-white shadow-sm hover:shadow-md hover:border-forest-300 transition-all">
-      <div className="relative h-36 bg-forest-50">
+      className="group flex flex-col rounded-2xl overflow-hidden border border-aira-800 bg-aira-900 hover:border-gold-400 hover:shadow-lg hover:shadow-gold-400/10 transition-all">
+      <div className="relative h-36 bg-aira-800">
         {imgUrl
           ? <Image src={imgUrl} alt={commonName} fill style={{ objectFit: 'cover' }} className="group-hover:scale-105 transition-transform duration-300" />
-          : <div className="w-full h-full flex items-center justify-center text-4xl">🐦</div>
+          : <div className="w-full h-full flex items-center justify-center text-4xl opacity-40">🐦</div>
         }
       </div>
       <div className="p-3">
-        <p className="font-semibold text-forest-800 text-sm leading-tight">{commonName}</p>
-        <p className="text-xs text-gray-400 italic mt-0.5 truncate">{scientificName}</p>
-        {family && <span className="mt-1 inline-block text-xs bg-forest-100 text-forest-700 px-2 py-0.5 rounded-full">{family}</span>}
+        <p className="font-semibold text-white text-sm leading-tight">{commonName}</p>
+        <p className="text-xs text-aira-400 italic mt-0.5 truncate">{scientificName}</p>
+        {family && <span className="mt-1.5 inline-block text-xs bg-aira-800 text-gold-400 px-2 py-0.5 rounded-full">{family}</span>}
       </div>
     </Link>
   );

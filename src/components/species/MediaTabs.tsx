@@ -6,36 +6,64 @@ type Tab = 'illustration' | 'photos' | 'sounds';
 
 interface Props { spp: string; scientificName: string; commonName: string; }
 
+interface Photo {
+  url: string;
+  place: string;
+  observed_on: string;
+}
+
+interface Sound {
+  id: string;
+  recordist: string;
+  file: string;
+  quality: string;
+  duration: string;
+  location: string;
+}
+
+interface WikiPage {
+  thumbnail?: { source?: string };
+}
+
+interface WikiResponse {
+  query?: {
+    pages?: Record<string, WikiPage>;
+  };
+}
+
 export function MediaTabs({ scientificName, commonName }: Props) {
-  const [tab, setTab] = useState<Tab>('illustration');
-  const [photos, setPhotos]     = useState<Array<{url:string; place:string; observed_on:string}>>([]);
-  const [sounds, setSounds]     = useState<Array<{id:string; recordist:string; file:string; quality:string; duration:string; location:string}>>([]);
-  const [wikiImg, setWikiImg]   = useState<string | null>(null);
-  const [loading, setLoading]   = useState(false);
+  const [tab, setTab]       = useState<Tab>('illustration');
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [sounds, setSounds] = useState<Sound[]>([]);
+  const [wikiImg, setWikiImg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Fetch Wikipedia illustration
     fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&piprop=thumbnail&titles=${encodeURIComponent(scientificName)}&pithumbsize=600&format=json&origin=*`)
       .then(r => r.json())
-      .then(d => {
+      .then((d: WikiResponse) => {
         const pages = d?.query?.pages ?? {};
-        const page  = Object.values(pages)[0] as Record<string, unknown>;
-        const thumb = page?.thumbnail as { source?: string } | undefined;
-        if (thumb?.source) setWikiImg(thumb.source);
-      }).catch(() => {});
+        const page  = Object.values(pages)[0];
+        if (page?.thumbnail?.source) setWikiImg(page.thumbnail.source);
+      })
+      .catch(() => {});
   }, [scientificName]);
 
   useEffect(() => {
     if (tab === 'photos' && photos.length === 0) {
       setLoading(true);
       fetch(`/api/photos?name=${encodeURIComponent(scientificName)}`)
-        .then(r => r.json()).then(d => setPhotos(d.photos ?? [])).finally(() => setLoading(false));
+        .then(r => r.json())
+        .then((d: { photos?: Photo[] }) => setPhotos(d.photos ?? []))
+        .finally(() => setLoading(false));
     }
     if (tab === 'sounds' && sounds.length === 0) {
       setLoading(true);
       fetch(`/api/sounds?name=${encodeURIComponent(commonName)}`)
-        .then(r => r.json()).then(d => setSounds(d.recordings ?? [])).finally(() => setLoading(false));
+        .then(r => r.json())
+        .then((d: { recordings?: Sound[] }) => setSounds(d.recordings ?? []))
+        .finally(() => setLoading(false));
     }
   }, [tab, scientificName, commonName, photos.length, sounds.length]);
 
@@ -43,16 +71,19 @@ export function MediaTabs({ scientificName, commonName }: Props) {
     <div className="card space-y-3">
       <div className="flex gap-2">
         {(['illustration','photos','sounds'] as Tab[]).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-lg text-sm font-semibold capitalize transition-colors ${
-            tab === t ? 'bg-forest-600 text-white' : 'bg-forest-100 text-forest-700 hover:bg-forest-200'
-          }`}>{t === 'illustration' ? '🖼️ Illustration' : t === 'photos' ? '📷 Photos' : '🔊 Sounds'}</button>
+          <button key={t} onClick={() => setTab(t)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold capitalize transition-colors ${
+              tab === t ? 'bg-forest-600 text-white' : 'bg-forest-100 text-forest-700 hover:bg-forest-200'
+            }`}>
+            {t === 'illustration' ? '🖼️ Illustration' : t === 'photos' ? '📷 Photos' : '🔊 Sounds'}
+          </button>
         ))}
       </div>
 
       {tab === 'illustration' && (
         wikiImg
           ? <div className="relative w-full h-72 rounded-xl overflow-hidden bg-gray-100">
-              <Image src={wikiImg} alt={scientificName} fill style={{objectFit:'contain'}} />
+              <Image src={wikiImg} alt={scientificName} fill style={{ objectFit: 'contain' }} />
             </div>
           : <div className="h-48 flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl">No illustration available</div>
       )}
@@ -64,7 +95,7 @@ export function MediaTabs({ scientificName, commonName }: Props) {
             ? <div className="grid grid-cols-3 gap-2">
                 {photos.map((p, i) => (
                   <div key={i} className="relative h-28 rounded-xl overflow-hidden bg-gray-100">
-                    <Image src={p.url} alt={p.place || 'bird photo'} fill style={{objectFit:'cover'}} />
+                    <Image src={p.url} alt={p.place || 'bird photo'} fill style={{ objectFit: 'cover' }} />
                   </div>
                 ))}
               </div>
@@ -80,9 +111,9 @@ export function MediaTabs({ scientificName, commonName }: Props) {
                   <li key={s.id} className="flex items-center gap-3 border border-gray-100 rounded-xl p-3">
                     <button
                       onClick={() => {
-                        if (audioRef.current) { audioRef.current.pause(); }
+                        if (audioRef.current) audioRef.current.pause();
                         audioRef.current = new Audio(s.file);
-                        audioRef.current.play();
+                        audioRef.current.play().catch(console.error);
                       }}
                       className="shrink-0 w-9 h-9 bg-forest-600 text-white rounded-full flex items-center justify-center hover:bg-forest-700"
                     >▶</button>

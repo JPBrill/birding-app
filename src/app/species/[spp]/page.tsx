@@ -4,12 +4,22 @@ import { DistributionMap } from '@/components/species/DistributionMap';
 import { SeasonalChart } from '@/components/species/SeasonalChart';
 import { LogButton } from '@/components/species/LogButton';
 
-async function getSpecies(spp: string) {
+interface SABAPSpeciesDetail {
+  Common_group: string;
+  Common_species: string;
+  Genus: string;
+  Species: string;
+  Family: string;
+  Order: string;
+}
+
+async function getSpecies(spp: string): Promise<SABAPSpeciesDetail | null> {
   try {
-    const res = await fetch(`https://api.adu.org.za/sabap2/v2/search/species/${spp}`, {
-      next: { revalidate: 86400 },
-    });
-    const json = await res.json();
+    const res = await fetch(
+      `https://api.birdmap.africa/sabap2/v2/search/species/${spp}`,
+      { next: { revalidate: 86400 } }
+    );
+    const json = await res.json() as { data?: SABAPSpeciesDetail[] };
     return json?.data?.[0] ?? null;
   } catch {
     return null;

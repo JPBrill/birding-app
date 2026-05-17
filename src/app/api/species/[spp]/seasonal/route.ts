@@ -18,7 +18,7 @@ export async function GET(
   const { spp } = await params;
   try {
     const res = await fetch(
-      `https://api.adu.org.za/sabap2/v2/summary/species/monthly/${spp}`,
+      `https://api.birdmap.africa/sabap2/v2/summary/species/monthly/${spp}`,
       { next: { revalidate: 86400 } }
     );
     const json = await res.json() as { data?: MonthRecord[] };

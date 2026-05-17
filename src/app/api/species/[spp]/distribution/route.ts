@@ -7,10 +7,10 @@ export async function GET(
   const { spp } = await params;
   try {
     const res = await fetch(
-      `https://api.adu.org.za/sabap2/v2/summary/species/${spp}?format=geoJSON`,
+      `https://api.birdmap.africa/sabap2/v2/summary/species/${spp}?format=geoJSON`,
       { next: { revalidate: 86400 } }
     );
-    const json = await res.json();
+    const json: unknown = await res.json();
     return NextResponse.json(json);
   } catch (err) {
     console.error('SABAP2 distribution error', err);

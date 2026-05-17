@@ -5,10 +5,11 @@ export async function GET(req: NextRequest) {
   if (!q || q.length < 2) return NextResponse.json({ species: [] });
 
   try {
-    const res = await fetch(`https://api.adu.org.za/sabap2/v2/search/species/${encodeURIComponent(q)}`, {
-      next: { revalidate: 3600 },
-    });
-    const json = await res.json();
+    const res = await fetch(
+      `https://api.birdmap.africa/sabap2/v2/search/species/${encodeURIComponent(q)}`,
+      { next: { revalidate: 3600 } }
+    );
+    const json = await res.json() as { data?: unknown[] };
     return NextResponse.json({ species: json?.data ?? [] });
   } catch (err) {
     console.error('SABAP2 search error', err);

@@ -1,30 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const UA = 'BirdBookApp/1.0 (https://birding-app-coral.vercel.app; contact@birdbook.app)';
+
 interface WikiPage {
   thumbnail?: { source?: string };
 }
-
 interface WikiResponse {
   query?: { pages?: Record<string, WikiPage> };
 }
-
 interface GBIFSpecies {
+  speciesKey?: number;
   usageKey?: number;
 }
-
 interface GBIFMediaItem {
   type?: string;
-  format?: string;
   identifier?: string;
-  references?: string;
-  publisher?: string;
-  license?: string;
 }
-
 interface GBIFOccurrence {
   media?: GBIFMediaItem[];
 }
-
 interface GBIFOccurrenceResponse {
   results?: GBIFOccurrence[];
 }
@@ -32,7 +26,10 @@ interface GBIFOccurrenceResponse {
 async function getWikipediaImage(scientificName: string): Promise<string | null> {
   try {
     const url = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&piprop=thumbnail&titles=${encodeURIComponent(scientificName)}&pithumbsize=800&format=json&origin=*`;
-    const res  = await fetch(url, { next: { revalidate: 86400 } });
+    const res  = await fetch(url, {
+      headers: { 'User-Agent': UA },
+      next: { revalidate: 86400 },
+    });
     const data = await res.json() as WikiResponse;
     const pages = data?.query?.pages ?? {};
     const page  = Object.values(pages)[0];
@@ -44,17 +41,17 @@ async function getWikipediaImage(scientificName: string): Promise<string | null>
 
 async function getGBIFImage(scientificName: string): Promise<string | null> {
   try {
-    // Step 1: resolve species key
-    const speciesRes  = await fetch(
+    const speciesRes = await fetch(
       `https://api.gbif.org/v1/species?name=${encodeURIComponent(scientificName)}&limit=1`,
       { next: { revalidate: 86400 } }
     );
     const speciesData = await speciesRes.json() as { results?: GBIFSpecies[] };
-    const key = speciesData?.results?.[0]?.usageKey;
+    const result = speciesData?.results?.[0];
+    // prefer speciesKey (accepted name), fall back to usageKey
+    const key = result?.speciesKey ?? result?.usageKey;
     if (!key) return null;
 
-    // Step 2: find a StillImage occurrence
-    const occRes  = await fetch(
+    const occRes = await fetch(
       `https://api.gbif.org/v1/occurrence/search?taxonKey=${key}&mediaType=StillImage&limit=20`,
       { next: { revalidate: 86400 } }
     );

@@ -21,33 +21,27 @@ interface Sound {
   location: string;
 }
 
-interface WikiPage {
-  thumbnail?: { source?: string };
-}
-
-interface WikiResponse {
-  query?: {
-    pages?: Record<string, WikiPage>;
-  };
+interface IllustrationResult {
+  url: string | null;
+  source: 'wikipedia' | 'gbif' | null;
 }
 
 export function MediaTabs({ scientificName, commonName }: Props) {
-  const [tab, setTab]       = useState<Tab>('illustration');
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [sounds, setSounds] = useState<Sound[]>([]);
-  const [wikiImg, setWikiImg] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [tab, setTab]             = useState<Tab>('illustration');
+  const [photos, setPhotos]       = useState<Photo[]>([]);
+  const [sounds, setSounds]       = useState<Sound[]>([]);
+  const [illus, setIllus]         = useState<IllustrationResult>({ url: null, source: null });
+  const [illusLoading, setIllusLoading] = useState(true);
+  const [loading, setLoading]     = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&piprop=thumbnail&titles=${encodeURIComponent(scientificName)}&pithumbsize=600&format=json&origin=*`)
+    setIllusLoading(true);
+    fetch(`/api/illustration?name=${encodeURIComponent(scientificName)}`)
       .then(r => r.json())
-      .then((d: WikiResponse) => {
-        const pages = d?.query?.pages ?? {};
-        const page  = Object.values(pages)[0];
-        if (page?.thumbnail?.source) setWikiImg(page.thumbnail.source);
-      })
-      .catch(() => {});
+      .then((d: IllustrationResult) => setIllus(d))
+      .catch(() => setIllus({ url: null, source: null }))
+      .finally(() => setIllusLoading(false));
   }, [scientificName]);
 
   useEffect(() => {
@@ -81,11 +75,18 @@ export function MediaTabs({ scientificName, commonName }: Props) {
       </div>
 
       {tab === 'illustration' && (
-        wikiImg
-          ? <div className="relative w-full h-72 rounded-xl overflow-hidden bg-gray-100">
-              <Image src={wikiImg} alt={scientificName} fill style={{ objectFit: 'contain' }} />
-            </div>
-          : <div className="h-48 flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl">No illustration available</div>
+        illusLoading
+          ? <div className="h-64 flex items-center justify-center text-gray-400 animate-pulse">Loading…</div>
+          : illus.url
+            ? <div className="space-y-1">
+                <div className="relative w-full h-72 rounded-xl overflow-hidden bg-gray-100">
+                  <Image src={illus.url} alt={scientificName} fill style={{ objectFit: 'contain' }} />
+                </div>
+                <p className="text-xs text-gray-400 text-right">
+                  {illus.source === 'gbif' ? 'Image via GBIF' : 'Image via Wikipedia'}
+                </p>
+              </div>
+            : <div className="h-48 flex items-center justify-center text-gray-400 bg-gray-50 rounded-xl">No illustration available</div>
       )}
 
       {tab === 'photos' && (

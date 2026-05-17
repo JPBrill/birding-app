@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(_req: NextRequest, { params }: { params: { spp: string } }) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ spp: string }> }
+) {
+  const { spp } = await params;
   try {
     const res = await fetch(
-      `https://api.adu.org.za/sabap2/v2/summary/species/monthly/${params.spp}`,
+      `https://api.adu.org.za/sabap2/v2/summary/species/monthly/${spp}`,
       { next: { revalidate: 86400 } }
     );
     const json = await res.json();
-    // Aggregate into monthly reporting rates for South Africa
     const monthly: Record<string, { total: number; count: number }> = {};
     for (const r of json?.data ?? []) {
       if (r.country !== 'South Africa') continue;
@@ -16,11 +19,11 @@ export async function GET(_req: NextRequest, { params }: { params: { spp: string
       monthly[m].total += parseFloat(r.reprate ?? '0');
       monthly[m].count += 1;
     }
-    const months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-    const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const rates = months.map((m, i) => ({
+    const months  = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+    const labels  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const rates   = months.map((m, i) => ({
       month: labels[i],
-      rate: monthly[m] ? +(monthly[m].total / monthly[m].count).toFixed(2) : 0,
+      rate:  monthly[m] ? +(monthly[m].total / monthly[m].count).toFixed(2) : 0,
     }));
     return NextResponse.json({ rates });
   } catch (err) {

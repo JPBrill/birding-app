@@ -16,13 +16,17 @@ async function getSpecies(spp: string) {
   }
 }
 
-export default async function SpeciesDetailPage({ params }: { params: { spp: string } }) {
-  const sp = await getSpecies(params.spp);
+export default async function SpeciesDetailPage({
+  params,
+}: {
+  params: Promise<{ spp: string }>;
+}) {
+  const { spp } = await params;
+  const sp = await getSpecies(spp);
   if (!sp) notFound();
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-forest-800">
@@ -34,22 +38,19 @@ export default async function SpeciesDetailPage({ params }: { params: { spp: str
             <span className="badge bg-earth-100 text-earth-800">{sp.Order}</span>
           </div>
         </div>
-        <LogButton spp={params.spp} commonName={`${sp.Common_group} ${sp.Common_species}`} />
+        <LogButton spp={spp} commonName={`${sp.Common_group} ${sp.Common_species}`} />
       </div>
 
-      {/* Media: illustration, photos, sounds */}
-      <MediaTabs spp={params.spp} scientificName={`${sp.Genus} ${sp.Species}`} commonName={`${sp.Common_group} ${sp.Common_species}`} />
+      <MediaTabs spp={spp} scientificName={`${sp.Genus} ${sp.Species}`} commonName={`${sp.Common_group} ${sp.Common_species}`} />
 
-      {/* Distribution map */}
       <div className="card">
         <h2 className="font-bold text-forest-700 mb-3">Distribution (SABAP2)</h2>
-        <DistributionMap spp={params.spp} />
+        <DistributionMap spp={spp} />
       </div>
 
-      {/* Seasonal chart */}
       <div className="card">
         <h2 className="font-bold text-forest-700 mb-3">Monthly Reporting Rate</h2>
-        <SeasonalChart spp={params.spp} />
+        <SeasonalChart spp={spp} />
       </div>
     </div>
   );

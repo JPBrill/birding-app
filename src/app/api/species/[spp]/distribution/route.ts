@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(_req: NextRequest, { params }: { params: { spp: string } }) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ spp: string }> }
+) {
+  const { spp } = await params;
   try {
     const res = await fetch(
-      `https://api.adu.org.za/sabap2/v2/summary/species/${params.spp}?format=geoJSON`,
+      `https://api.adu.org.za/sabap2/v2/summary/species/${spp}?format=geoJSON`,
       { next: { revalidate: 86400 } }
     );
     const json = await res.json();

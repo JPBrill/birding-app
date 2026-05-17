@@ -4,11 +4,11 @@ import { createClient } from '@/lib/supabase/server';
 export async function GET() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) return NextResponse.json({ sightings: [] }); // Return empty if not logged in
 
   const { data, error } = await supabase
     .from('sightings')
-    .select('*, species:species_spp(common_group, common_species, genus, species)')
+    .select('*')
     .eq('user_id', user.id)
     .order('sighted_at', { ascending: false });
 

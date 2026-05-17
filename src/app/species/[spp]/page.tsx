@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
-import { MediaTabs } from '@/components/species/MediaTabs';
 import { DistributionMap } from '@/components/species/DistributionMap';
 import { SeasonalChart } from '@/components/species/SeasonalChart';
 import { LogButton } from '@/components/species/LogButton';
+import { PhotosTab } from '@/components/species/PhotosTab';
+import { SoundsTab } from '@/components/species/SoundsTab';
 
 interface SABAPSpeciesDetail {
   Common_group: string;
@@ -35,29 +36,43 @@ export default async function SpeciesDetailPage({
   const sp = await getSpecies(spp);
   if (!sp) notFound();
 
+  const commonName     = `${sp.Common_group} ${sp.Common_species}`;
+  const scientificName = `${sp.Genus} ${sp.Species}`;
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-forest-800">
-            {sp.Common_group} {sp.Common_species}
-          </h1>
-          <p className="text-gray-500 italic">{sp.Genus} {sp.Species}</p>
+          <h1 className="text-2xl font-bold text-forest-800">{commonName}</h1>
+          <p className="text-gray-500 italic">{scientificName}</p>
           <div className="flex gap-2 mt-2 flex-wrap">
             <span className="badge bg-forest-100 text-forest-800">{sp.Family}</span>
             <span className="badge bg-earth-100 text-earth-800">{sp.Order}</span>
           </div>
         </div>
-        <LogButton spp={spp} commonName={`${sp.Common_group} ${sp.Common_species}`} />
+        <LogButton spp={spp} commonName={commonName} />
       </div>
 
-      <MediaTabs spp={spp} scientificName={`${sp.Genus} ${sp.Species}`} commonName={`${sp.Common_group} ${sp.Common_species}`} />
+      {/* Photos */}
+      <div className="card">
+        <h2 className="font-bold text-forest-700 mb-3">📷 Photos</h2>
+        <PhotosTab scientificName={scientificName} />
+      </div>
 
+      {/* Sounds */}
+      <div className="card">
+        <h2 className="font-bold text-forest-700 mb-3">🔊 Sounds</h2>
+        <SoundsTab commonName={commonName} />
+      </div>
+
+      {/* Distribution */}
       <div className="card">
         <h2 className="font-bold text-forest-700 mb-3">Distribution (SABAP2)</h2>
         <DistributionMap spp={spp} />
       </div>
 
+      {/* Seasonal */}
       <div className="card">
         <h2 className="font-bold text-forest-700 mb-3">Monthly Reporting Rate</h2>
         <SeasonalChart spp={spp} />

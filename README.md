@@ -1,6 +1,6 @@
 # 🦜 BirdBook — SA Birding Field Guide & Life List
 
-A personal Southern African birding companion app for your wife's birding hobby. Browse ~1,000 species, listen to calls, explore distribution maps, and log every sighting.
+A personal Southern African birding companion app. Browse ~1,000 species, listen to calls, explore distribution maps, and log every sighting. Work in progress.
 
 ## Features
 
